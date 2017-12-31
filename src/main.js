@@ -1,9 +1,11 @@
 import React, { Component } from 'react'
 import { Animated, Image, StyleSheet, View } from 'react-native'
 import MapView from 'react-native-maps'
+import GeoCoder from 'react-native-geocoder'
 
 export default class Main extends Component {
   state = {
+    postion: null,
     carLocations: [
       {
         rotation: 78,
@@ -30,12 +32,33 @@ export default class Main extends Component {
     longitudeDelta: 0.00421
   }
 
+  _onRegionChange = region => {
+    this.setState({ position: null })
+    if (timeoutId) clearTimeout(timeoutId)
+    timeoutId = setTimeout(async () => {
+      try {
+        const res = await GeoCoder.geocodePosition({
+          lat: region.latitude,
+          lng: region.longitude
+        })
+        this.setState({ position: res[0] })
+      } catch (err) {
+        console.log(err)
+      }
+    }, 2000)
+  }
+
+  componentDidMount() {
+    this._onRegionChange(this.initialRegion)
+  }
+
   render() {
     return (
       <View style={{ flex: 1 }}>
         <MapView
           style={styles.fullScreenMap}
           initialRegion={this.initialRegion}
+          onRegionChange={this._onRegionChange}
         >
           {this.state.carLocations.map((carLocation, i) => (
             <MapView.Marker key={i} coordinate={carLocation}>
