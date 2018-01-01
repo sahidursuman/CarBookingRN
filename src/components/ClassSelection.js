@@ -16,7 +16,8 @@ export default class ClassSelection extends Component {
     classButtonPosition: new Animated.Value(15 + width * 0.1)
   }
 
-  _onClassChange = className => {
+  _onClassChange = className => e => {
+    console.log(className)
     if (className === 'superior') {
       Animated.timing(this.state.classButtonPosition, {
         toValue: width * 0.77,
