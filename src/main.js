@@ -3,9 +3,15 @@ import { Animated, Image, StyleSheet, View } from 'react-native'
 import MapView from 'react-native-maps'
 import GeoCoder from 'react-native-geocoder'
 
+import LocationPin from './components/LocationPin'
+import LocationSearch from './components/LocationSearch'
+import ClassSelection from './components/ClassSelection'
+import ConfirmationModal from './components/ConfirmationModal'
+
 export default class Main extends Component {
   state = {
     postion: null,
+    confirmationModalVisible: false,
     carLocations: [
       {
         rotation: 78,
@@ -34,8 +40,8 @@ export default class Main extends Component {
 
   _onRegionChange = region => {
     this.setState({ position: null })
-    if (timeoutId) clearTimeout(timeoutId)
-    timeoutId = setTimeout(async () => {
+    if (this.timeoutId) clearTimeout(this.timeoutId)
+    this.timeoutId = setTimeout(async () => {
       try {
         const res = await GeoCoder.geocodePosition({
           lat: region.latitude,
@@ -46,6 +52,10 @@ export default class Main extends Component {
         console.log(err)
       }
     }, 2000)
+  }
+
+  _onBookingRequest = () => {
+    this.setState({ confirmationModalVisible: true })
   }
 
   componentDidMount() {
@@ -71,6 +81,21 @@ export default class Main extends Component {
             </MapView.Marker>
           ))}
         </MapView>
+        <LocationSearch
+          value={
+            this.state.position &&
+            (this.state.position.feature ||
+              this.state.position.formattedAddress)
+          }
+        />
+        <LocationPin onPress={this._onBookingRequest} />
+        <ClassSelection />
+        <ConfirmationModal
+          visible={this.state.confirmationModalVisible}
+          onClose={() => {
+            this.setState({ confirmationModalVisible: false })
+          }}
+        />
       </View>
     )
   }
